@@ -261,6 +261,20 @@ Addr.prototype.toLong = function toLong() {
   return ((this._fields[6] << 16) >>> 0) + this._fields[7];
 };
 
+Addr.prototype.toBigInt = function toBigInt() {
+  if (v4subnet.contains(this)) {
+    // Handle IPv4-mapped IPv6 addresses (32-bit)
+    return (BigInt(this._fields[6]) << BigInt(16)) + BigInt(this._fields[7]);
+  } else {
+    // Handle regular IPv6 addresses (128-bit)
+    let result = BigInt(0);
+    for (let i = 0; i < 8; i++) {
+      result = (result << BigInt(16)) + BigInt(this._fields[i]);
+    }
+    return result;
+  }
+};
+
 Addr.prototype.clone = function cloneAddr() {
   var out = new Addr();
   out._fields = this._fields.slice();
@@ -500,6 +514,8 @@ function ip6addrParse(input) {
     return parseString(input);
   } else if (typeof (input) === 'number') {
     return parseLong(input);
+  } else if (typeof (input) === 'bigint') {
+    return parseBigInt(input);
   } else if (typeof (input) === 'object' && _isAddr(input)) {
     return input;
   } else {
@@ -680,6 +696,46 @@ function parseLong(input) {
   out._fields[5] = 0xffff;
   out._attrs.ipv4Bare = true;
   out._attrs.ipv4Mapped = true;
+  return out;
+}
+
+function parseBigInt(input) {
+  if (typeof input !== 'bigint') {
+    throw new Error('Input must be a BigInt');
+  }
+  
+  const MAX_IPV4 = BigInt(0xffffffff); // Maximum for IPv4
+  const MAX_IPV6 = (BigInt(1) << BigInt(128)) - BigInt(1); // Maximum for IPv6
+
+  if (input < 0n || input > MAX_IPV6) {
+    throw new Error('Value must be within 128-bit range for IPv6');
+  }
+
+  const out = new Addr();
+  
+  // Handle IPv4 addresses (32-bit or IPv4-mapped IPv6)
+  if (input <= MAX_IPV4) {
+    out._fields[7] = Number(input & BigInt(0xffff)); // Lower 16 bits
+    out._fields[6] = Number(input >> BigInt(16)); // Upper 16 bits
+    out._fields[5] = 0xffff; // IPv4-mapped marker
+    out._fields[4] = 0; // Leading zero fields for IPv4-mapped IPv6
+    out._fields[3] = 0;
+    out._fields[2] = 0;
+    out._fields[1] = 0;
+    out._fields[0] = 0;
+    out._attrs.ipv4Bare = true;
+    out._attrs.ipv4Mapped = true;
+  } 
+  // Handle full IPv6 addresses (128-bit)
+  else {
+    for (let i = 7; i >= 0; i--) {
+      out._fields[i] = Number(input & BigInt(0xffff)); // Extract lower 16 bits for each field
+      input = input >> BigInt(16); // Shift input by 16 bits for the next field
+    }
+    out._attrs.ipv4Mapped = false;
+    out._attrs.ipv4Bare = false;
+  }
+
   return out;
 }
 

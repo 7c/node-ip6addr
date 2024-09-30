@@ -16,7 +16,7 @@ If you want to also parse and manipulate MAC addresses, see
 
 ## `parse(input)`
 
-Parse the input IP address, which can be either a string or an integer, and
+Parse the input IP address, which can be either a string an integer or bigint, and
 return a representative [`Addr`](#class-addr). When the address is invalid,
 an explanatory `Error` is thrown.
 
@@ -30,6 +30,10 @@ an explanatory `Error` is thrown.
 > var addr3 = ip6addr.parse('::ffff:127.0.0.1')
 > addr3.toString()
 '::ffff:127.0.0.1'
+
+> var addr4 = ip6addr.parse(340282366920938463463374607431768211455n)
+> addr4.toString()
+'ffff::ffff'
 ```
 
 ## `createCIDR(cidr, [plen])`
@@ -173,6 +177,20 @@ will throw an Error.
 > var addr = ip6addr.parse('127.0.0.1')
 > addr.toLong()
 2130706433
+```
+
+
+### `Addr#toBigInt()`
+Return the address represented as a 128-bit integer. 
+
+```javascript
+> var addr = ip6addr.parse('127.0.0.1')
+> addr.toBigInt()
+2130706433n
+
+> var addr = ip6addr.parse('::1')
+> addr.toBigInt()
+1n
 ```
 
 ### `Addr#offset(num)`
