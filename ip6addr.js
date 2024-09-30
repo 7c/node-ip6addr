@@ -262,16 +262,17 @@ Addr.prototype.toLong = function toLong() {
 };
 
 Addr.prototype.toBigInt = function toBigInt() {
+  const IPV6_OFFSET = BigInt('18446744073709551616'); // 2^64 - otherwise collisions with ipv4
   if (v4subnet.contains(this)) {
     // Handle IPv4-mapped IPv6 addresses (32-bit)
     return (BigInt(this._fields[6]) << BigInt(16)) + BigInt(this._fields[7]);
   } else {
-    // Handle regular IPv6 addresses (128-bit)
+    // Handle regular IPv6 addresses (128-bit), with offset
     let result = BigInt(0);
     for (let i = 0; i < 8; i++) {
       result = (result << BigInt(16)) + BigInt(this._fields[i]);
     }
-    return result;
+    return result + IPV6_OFFSET;
   }
 };
 
@@ -706,13 +707,14 @@ function parseBigInt(input) {
   
   const MAX_IPV4 = BigInt(0xffffffff); // Maximum for IPv4
   const MAX_IPV6 = (BigInt(1) << BigInt(128)) - BigInt(1); // Maximum for IPv6
+  const IPV6_OFFSET = BigInt('18446744073709551616'); // 2^64
 
   if (input < 0n || input > MAX_IPV6) {
     throw new Error('Value must be within 128-bit range for IPv6');
   }
 
   const out = new Addr();
-  
+
   // Handle IPv4 addresses (32-bit or IPv4-mapped IPv6)
   if (input <= MAX_IPV4) {
     out._fields[7] = Number(input & BigInt(0xffff)); // Lower 16 bits
@@ -726,8 +728,9 @@ function parseBigInt(input) {
     out._attrs.ipv4Bare = true;
     out._attrs.ipv4Mapped = true;
   } 
-  // Handle full IPv6 addresses (128-bit)
+  // Handle full IPv6 addresses (128-bit), accounting for the offset
   else {
+    input = input - IPV6_OFFSET;  // Adjust input by removing the IPv6 offset
     for (let i = 7; i >= 0; i--) {
       out._fields[i] = Number(input & BigInt(0xffff)); // Extract lower 16 bits for each field
       input = input >> BigInt(16); // Shift input by 16 bits for the next field
