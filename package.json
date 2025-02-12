@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/7c/node-ip6addr.git"
+    "url": "git+https://github.com/7c/node-ip6addr.git"
   },
   "bugs": {
     "url": "https://github.com/7c/node-ip6addr/issues"
@@ -20,6 +20,9 @@
   "dependencies": {
     "assert-plus": "^1.0.0",
     "jsprim": "^2.0.2"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "istanbul": "^0.4.5",
