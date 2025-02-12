@@ -1,6 +1,6 @@
 {
-  "name": "ip6addr",
-  "version": "0.2.5",
+  "name": "@7c/node-ip6addr",
+  "version": "0.2.6",
   "description": "IPv6/IPv4 address parsing and manipulation",
   "keywords": [
     "ip",
@@ -11,10 +11,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/joyent/node-ip6addr.git"
+    "url": "https://github.com/7c/node-ip6addr.git"
   },
   "bugs": {
-    "url": "https://github.com/joyent/node-ip6addr/issues"
+    "url": "https://github.com/7c/node-ip6addr/issues"
   },
   "main": "ip6addr.js",
   "dependencies": {
