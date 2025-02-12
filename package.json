@@ -22,8 +22,8 @@
     "jsprim": "^2.0.2"
   },
   "devDependencies": {
-    "istanbul": "^0.3.6",
-    "tape": "^3.5.0"
+    "istanbul": "^0.4.5",
+    "tape": "^5.9.0"
   },
   "scripts": {
     "test": "./node_modules/.bin/istanbul cover --print none test/runall.js"
